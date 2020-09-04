@@ -1,0 +1,6 @@
+.vscode
+.gitignore
+.pylintrc
+test.sh
+.pytest_cache
+**/.pytest_cache

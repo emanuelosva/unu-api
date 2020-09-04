@@ -1,0 +1,12 @@
+version: "3"
+services:
+  api:
+    container_name: api
+    build: .
+    image: unu_api
+    ports:
+      - 3000:80
+    volumes:
+      - ./app:/app
+    env_file: ./app/.env
+    command: bash -c "coverage run -m pytest && coverage report"
