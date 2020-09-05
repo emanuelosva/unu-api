@@ -143,22 +143,19 @@ async def login_for_acces_token(body: UserLogin):
 ###########################################
 
 @ router.get(
-    "/{user_id}",
+    "",
     status_code=200,
     response_model=UserOut,
     responses={
         "401": {"model": exceptions.Unauthorized},
-        "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError}
     })
-async def get_a_logged_user(user_id: str, user=Depends(get_current_user)):
+async def get_a_logged_user(user: dict = Depends(get_current_user)):
     """
     Retrieve the info of the logen current user.
     """
-    check_permission(user, user_id)
-
-    user: UserOut = await UserController.read(user_id)
+    user: UserOut = await UserController.read(user["uuid"])
     if not user:
         exceptions.not_fount_404("User not found")
     return user
