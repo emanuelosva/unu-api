@@ -61,7 +61,7 @@ def _unique_filename(filename: str) -> str:
 ##           Storage Functions           ##
 ###########################################
 
-async def upload_file(file_base64: str = "", file: UploadFile = None) -> str:
+def upload_file(file_base64: str = "", file: UploadFile = None) -> str:
     """
     Uploads a file to a given Cloud Storage bucket and returns the public url
     to the new object.
