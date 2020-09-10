@@ -1,6 +1,5 @@
 build:
   docker:
     api: Dockerfile
-    worker: Dockerfile
 run:
-  worker: python3 worker/main.py
+  api: "/start.sh"
