@@ -1,7 +1,0 @@
-build:
-  docker:
-    web: Dockerfile
-    worker: Dockerfile
-run:
-  web: uvicorn main:app
-  worker: python3 worker/main.py
