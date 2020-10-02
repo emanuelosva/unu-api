@@ -24,17 +24,19 @@ router = APIRouter()
 ##           Create a new Event          ##
 ###########################################
 
+
 @router.post(
     "",
     status_code=201,
     response_model=EventOut,
     responses={
         "401": {"model": exceptions.Unauthorized},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def create_a_new_event(
-        body: EventsIn, backgroud_task: BackgroundTasks,
-        user=Depends(get_current_user)):
+    body: EventsIn, backgroud_task: BackgroundTasks, user=Depends(get_current_user)
+):
     """
     Create a new event and the reference
     to the user owner and organization.
@@ -69,11 +71,13 @@ async def create_a_new_event(
 ##             Retrieve Events           ##
 ###########################################
 
+
 @router.get(
     "/published",
     status_code=200,
     response_model=List[Event],
-    responses={"500": {"model": exceptions.ServerError}})
+    responses={"500": {"model": exceptions.ServerError}},
+)
 async def get_events_list():
     """
     Retrieve all the published events.
@@ -88,8 +92,9 @@ async def get_events_list():
     response_model=Event,
     responses={
         "404": {"model": exceptions.NotFound},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def get_events_from_url(organization_url: str, url: str):
     """
     Retrieve a event that mathces the url.
@@ -108,9 +113,9 @@ async def get_events_from_url(organization_url: str, url: str):
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
-async def get_a_event(
-        event_id: str, user=Depends(get_current_user)):
+    },
+)
+async def get_a_event(event_id: str, user=Depends(get_current_user)):
     """
     Retrieve the info a specific event.
     """
@@ -129,6 +134,7 @@ async def get_a_event(
 ##        Update a existing Event        ##
 ###########################################
 
+
 @router.put(
     "/{event_id}",
     status_code=200,
@@ -137,10 +143,11 @@ async def get_a_event(
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def update_a_existing_event(
-        event_id: str, body: EventUpdate,
-        user=Depends(get_current_user)):
+    event_id: str, body: EventUpdate, user=Depends(get_current_user)
+):
     """
     Update a event info.
     """
@@ -164,9 +171,11 @@ async def update_a_existing_event(
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def change_publication_status(
-        event_id: str, actual_status: bool, user=Depends(get_current_user)):
+    event_id: str, actual_status: bool, user=Depends(get_current_user)
+):
     """
     Change the publication status of one event only if the user owner call
     the endpoint.
@@ -185,19 +194,20 @@ async def change_publication_status(
 ##      Update a Association in Event    ##
 ###########################################
 
+
 @router.patch(
     "/{event_id}",
     status_code=200,
     response_model=responses.Updated,
-    responses={"404": {"model": exceptions.NotFound}})
+    responses={"404": {"model": exceptions.NotFound}},
+)
 async def update_association_in_event(
-        event_id: str, action: str,
-        field: str = Body(...), uuid: str = Body(...)):
+    event_id: str, action: str, field: str = Body(...), uuid: str = Body(...)
+):
     """
     Add or remove a association in one event.
     """
-    updated = await EventController.update_to_field(
-        event_id, field, uuid, action)
+    updated = await EventController.update_to_field(event_id, field, uuid, action)
     if not updated:
         exceptions.not_fount_404("Event not found")
 
@@ -219,10 +229,11 @@ async def update_association_in_event(
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def delete_a_existing_event(
-        event_id: str, backgroud_task: BackgroundTasks,
-        user=Depends(get_current_user)):
+    event_id: str, backgroud_task: BackgroundTasks, user=Depends(get_current_user)
+):
     """
     Delete a existing event and its associations with user and organization.
     """

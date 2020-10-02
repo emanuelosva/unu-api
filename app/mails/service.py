@@ -24,6 +24,7 @@ sender = EmailSender()
 ##             Email Functions           ##
 ###########################################
 
+
 def send_welcome_email(username: str, email: str) -> None:
     """
     Send a welcome email.
@@ -43,14 +44,14 @@ def send_welcome_email(username: str, email: str) -> None:
 
 
 def send_special_email(
-        event_name: str,
-        message: str,
-        subjet: str,
-        to_list: List[str],
-        event_url: str,
-        image: bytes = None,
-        content_type: str = None,
-        send_at: datetime = None,
+    event_name: str,
+    message: str,
+    subjet: str,
+    to_list: List[str],
+    event_url: str,
+    image: bytes = None,
+    content_type: str = None,
+    send_at: datetime = None,
 ) -> None:
     """
     Send a special email.
@@ -76,15 +77,15 @@ def send_special_email(
         html_content=content,
         image=image,
         content_type=content_type,
-        send_at=send_at
+        send_at=send_at,
     )
     sender.send_email(email_to_send=email)
 
 
 def send_close_event_email(
-        event_name: str,
-        event_url: str,
-        to_list: List[str],
+    event_name: str,
+    event_url: str,
+    to_list: List[str],
 ) -> str:
     """
     Send a schedule email to notify that a event is tomorrow.

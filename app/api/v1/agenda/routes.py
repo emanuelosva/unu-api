@@ -24,6 +24,7 @@ router = APIRouter()
 ##        Create a Agenda Entities       ##
 ###########################################
 
+
 @router.post(
     "/days",
     status_code=201,
@@ -33,11 +34,11 @@ router = APIRouter()
         "403": {"model": exceptions.Forbidden},
         "409": {"model": exceptions.Conflict},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def create_a_new_day(
-        body: DayIn,
-        backgroud_task: BackgroundTasks,
-        user=Depends(get_current_user)):
+    body: DayIn, backgroud_task: BackgroundTasks, user=Depends(get_current_user)
+):
     """
     Create a new day in agenda and reference it to one event.
     """
@@ -68,10 +69,11 @@ async def create_a_new_day(
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def create_a_conference_to_day(
-        day_id: str, body: ConferenceIn,
-        user=Depends(get_current_user)):
+    day_id: str, body: ConferenceIn, user=Depends(get_current_user)
+):
     """
     Add a new conference to one day.
     """
@@ -91,13 +93,15 @@ async def create_a_conference_to_day(
 ##        Retrieve Agenda Entities       ##
 ###########################################
 
+
 @router.get(
     "/days",
     status_code=200,
     response_model=List[DayOut],
     responses={
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def get_all_days(event_id: str):
     """
     Return all day of one event.
@@ -113,7 +117,8 @@ async def get_all_days(event_id: str):
     responses={
         "404": {"mode": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def get_a_day(day_id: str, _=Depends(get_current_user)):
     """
     Return a day info.
@@ -133,8 +138,9 @@ async def get_a_day(day_id: str, _=Depends(get_current_user)):
     responses={
         "401": {"model": exceptions.Unauthorized},
         "404": {"model": exceptions.NotFound},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def get_one_conference(conference_id: str, _=Depends(get_current_user)):
     """
     Retrieve a existing conference.
@@ -149,6 +155,7 @@ async def get_one_conference(conference_id: str, _=Depends(get_current_user)):
 ##         Update Agenda Entities        ##
 ###########################################
 
+
 @router.put(
     "/days/{day_id}",
     status_code=200,
@@ -160,10 +167,11 @@ async def get_one_conference(conference_id: str, _=Depends(get_current_user)):
         "409": {"model": exceptions.Conflict},
         "412": {"mode": exceptions.FailPrecondition},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def update_a_existing_day(
-        day_id: str, body: DayIn,
-        user=Depends(get_current_user)):
+    day_id: str, body: DayIn, user=Depends(get_current_user)
+):
     """
     Update a existing day.
     """
@@ -176,9 +184,7 @@ async def update_a_existing_day(
     if updated == 409:
         exceptions.conflict_409("The date is already ocuped")
     if updated == 412:
-        exceptions.fail_precondition_412(
-            "This day doesn't belongs to the passed event"
-        )
+        exceptions.fail_precondition_412("This day doesn't belongs to the passed event")
 
     return {"detail": "Modified success", "modifiedCount": updated}
 
@@ -192,16 +198,15 @@ async def update_a_existing_day(
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def update_a_conference(
-        conference_id, body: ConferenceIn,
-        user=Depends(get_current_user)):
+    conference_id, body: ConferenceIn, user=Depends(get_current_user)
+):
     """
     Update a existing conference.
     """
-    updated = await AgendaController.update_conference(
-        conference_id, body, user
-    )
+    updated = await AgendaController.update_conference(conference_id, body, user)
 
     if updated == 403:
         exceptions.forbidden_403("Operation forbidden")
@@ -215,6 +220,7 @@ async def update_a_conference(
 ##         Delete Agenda entities        ##
 ###########################################
 
+
 @router.delete(
     "/conferences/{conference_id}",
     status_code=200,
@@ -224,9 +230,11 @@ async def update_a_conference(
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"mode": exceptions.ServerError},
-    })
+    },
+)
 async def delete_a_conference(
-        conference_id: str, user: dict = Depends(get_current_user)):
+    conference_id: str, user: dict = Depends(get_current_user)
+):
     """
     Delete a conference from a day.
     """
@@ -252,10 +260,11 @@ async def delete_a_conference(
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def delete_a_existing_day(
-        day_id: str, backgroud_task: BackgroundTasks,
-        user: dict = Depends(get_current_user)):
+    day_id: str, backgroud_task: BackgroundTasks, user: dict = Depends(get_current_user)
+):
     """
     Delete a existing day and remove the association from event.
     """

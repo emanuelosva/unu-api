@@ -21,6 +21,7 @@ from .connect import get_storage_bucket
 ##           Auxiliar Functions          ##
 ###########################################
 
+
 def _check_extension(filename: str) -> None:
     """
     Check if the extension is allowed. If not
@@ -35,7 +36,7 @@ def _check_extension(filename: str) -> None:
     if ext.replace(".", "") not in settings.ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Only alowed extensions: {settings.ALLOWED_EXTENSIONS}"
+            detail=f"Only alowed extensions: {settings.ALLOWED_EXTENSIONS}",
         )
 
 
@@ -53,13 +54,14 @@ def _unique_filename(filename: str) -> str:
     filename: str - A unique filename.
     """
     date = datetime.utcnow().strftime("%Y-%m-%d-%H%M%S")
-    basename, extension = filename.rsplit('.', 1)
+    basename, extension = filename.rsplit(".", 1)
     return "{0}-{1}-{2}.{3}".format(basename, date, str(uuid4()), extension)
 
 
 ###########################################
 ##           Storage Functions           ##
 ###########################################
+
 
 def upload_file(file_base64: str = "", file: UploadFile = None) -> str:
     """
@@ -107,5 +109,5 @@ def upload_file(file_base64: str = "", file: UploadFile = None) -> str:
         return False
 
     if isinstance(url, six.binary_type):
-        url = url.decode('utf-8')
+        url = url.decode("utf-8")
     return url

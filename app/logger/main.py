@@ -48,11 +48,7 @@ class ErrorLogger:
         date = datetime.now()
         filename = __name__
         error_to_str = self._exception_to_string(_exception)
-        error = {
-            "date": date,
-            "filename": filename,
-            "exception": error_to_str
-        }
+        error = {"date": date, "filename": filename, "exception": error_to_str}
         return error
 
     def _send_email_to_admin(self, dict_error: dict) -> None:
@@ -63,9 +59,8 @@ class ErrorLogger:
         to_list = [settings.EMAIL_ADMIN]
 
         email = self.sender.create_email(
-            to_list=to_list,
-            subject="UNU API ERROR",
-            html_content=message)
+            to_list=to_list, subject="UNU API ERROR", html_content=message
+        )
 
         self.sender.send_email(email)
 
@@ -73,10 +68,11 @@ class ErrorLogger:
         """
         Transform a exception to string.
         """
-        stack = traceback.extract_stack(
-        )[:-3] + traceback.extract_tb(excp.__traceback__)
+        stack = traceback.extract_stack()[:-3] + traceback.extract_tb(
+            excp.__traceback__
+        )
         pretty = traceback.format_list(stack)
-        return ''.join(pretty) + '\n  {} {}'.format(excp.__class__, excp)
+        return "".join(pretty) + "\n  {} {}".format(excp.__class__, excp)
 
     def _generate_message(self, dict_error: dict) -> str:
         """

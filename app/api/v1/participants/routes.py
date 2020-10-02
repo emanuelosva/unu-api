@@ -19,6 +19,7 @@ router = APIRouter()
 ##    Create a Participants directory    ##
 ###########################################
 
+
 @router.post(
     "",
     status_code=201,
@@ -26,7 +27,8 @@ router = APIRouter()
     responses={
         "409": {"model": exceptions.Conflict},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def create_a_new_pariticpants_directory(event_id: str):
     """
     Create a new participants directory.
@@ -45,6 +47,7 @@ async def create_a_new_pariticpants_directory(event_id: str):
 ##         Register a participant        ##
 ###########################################
 
+
 @router.post(
     "/register",
     status_code=201,
@@ -52,7 +55,8 @@ async def create_a_new_pariticpants_directory(event_id: str):
     responses={
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def register_a_participant(event_id: str, email: str):
     """
     Register a new participant to one event. Add the email to
@@ -74,6 +78,7 @@ async def register_a_participant(event_id: str, email: str):
 ##      Get  Participants Directory      ##
 ###########################################
 
+
 @router.get(
     "",
     status_code=200,
@@ -82,10 +87,9 @@ async def register_a_participant(event_id: str, email: str):
         "404": {"model": exceptions.NotFound},
         "403": {"model": exceptions.Forbidden},
         "500": {"model": exceptions.ServerError},
-    })
-async def get_participants_dir(
-        event_id: str,
-        user: dict = Depends(get_current_user)):
+    },
+)
+async def get_participants_dir(event_id: str, user: dict = Depends(get_current_user)):
     """
     Return the participants directory of a specific event
     """
@@ -103,6 +107,7 @@ async def get_participants_dir(
 ##    Delete a Participants Directory    ##
 ###########################################
 
+
 @router.delete(
     "",
     status_code=200,
@@ -110,7 +115,8 @@ async def get_participants_dir(
     responses={
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def delete_a_participants_directory(event_id: str):
     """
     Delete a participants directory when event is deleted.

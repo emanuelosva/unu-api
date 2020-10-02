@@ -24,6 +24,7 @@ router = APIRouter()
 ##         Create a new Speaker          ##
 ###########################################
 
+
 @router.post(
     "",
     status_code=201,
@@ -32,11 +33,12 @@ router = APIRouter()
         "401": {"model": exceptions.Unauthorized},
         "403": {"model": exceptions.Forbidden},
         "409": {"model": exceptions.Conflict},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def create_a_new_speaker(
-        body: SpeakerIn, backgroud_task: BackgroundTasks,
-        user=Depends(get_current_user)):
+    body: SpeakerIn, backgroud_task: BackgroundTasks, user=Depends(get_current_user)
+):
     """
     Create a new speaker and the reference to the event.
     """
@@ -61,13 +63,13 @@ async def create_a_new_speaker(
 ##            Retrieve a speaker         ##
 ###########################################
 
+
 @router.get(
     "",
     status_code=200,
     response_model=List[SpeakerOut],
-    responses={
-        "500": {"model": exceptions.ServerError}
-    })
+    responses={"500": {"model": exceptions.ServerError}},
+)
 async def get_speakers_list(event_id: str):
     """
     Retrieve all speakers that belongs to the event.
@@ -83,10 +85,10 @@ async def get_speakers_list(event_id: str):
     responses={
         "401": {"model": exceptions.Unauthorized},
         "404": {"model": exceptions.NotFound},
-        "500": {"model": exceptions.ServerError}
-    })
-async def get_a_speaker(
-        speaker_id: str, _=Depends(get_current_user)):
+        "500": {"model": exceptions.ServerError},
+    },
+)
+async def get_a_speaker(speaker_id: str, _=Depends(get_current_user)):
     """
     Retrieve the info of a existing speaker.
     """
@@ -101,6 +103,7 @@ async def get_a_speaker(
 # ##       Update a existing Speaker       ##
 # ###########################################
 
+
 @router.put(
     "/{speaker_id}",
     status_code=200,
@@ -109,11 +112,12 @@ async def get_a_speaker(
         "401": {"model": exceptions.Unauthorized},
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def update_a_existing_speaker(
-        speaker_id: str, body: SpeakerIn,
-        user=Depends(get_current_user)):
+    speaker_id: str, body: SpeakerIn, user=Depends(get_current_user)
+):
     """
     Update a speaker info.
     """
@@ -131,6 +135,7 @@ async def update_a_existing_speaker(
 ##            Delete a Speaker           ##
 ###########################################
 
+
 @router.delete(
     "/{speaker_id}",
     status_code=200,
@@ -140,10 +145,11 @@ async def update_a_existing_speaker(
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.NotFound},
-    })
+    },
+)
 async def delete_a_existing_speaker(
-        speaker_id: str, backgroud_task: BackgroundTasks,
-        user=Depends(get_current_user)):
+    speaker_id: str, backgroud_task: BackgroundTasks, user=Depends(get_current_user)
+):
     """
     Delete a existing Speaker and the associated with the user
     """

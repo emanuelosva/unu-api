@@ -17,13 +17,14 @@ from config import settings
 ##         Job Queue (schedule)          ##
 ###########################################
 
+
 def create_job(
-        function: callable,
-        *args,
-        date_time: datetime = None,
-        utc_hours: int = 0,
-        queue_name: str = "email",
-        **kwargs,
+    function: callable,
+    *args,
+    date_time: datetime = None,
+    utc_hours: int = 0,
+    queue_name: str = "email",
+    **kwargs,
 ) -> str:
     """
     Add a new Job to Queue.
@@ -45,11 +46,7 @@ def create_job(
         # Task to be schedule inmediatly.
         if not date_time:
             redis_queue_default = Queue()
-            job = redis_queue_default.enqueue(
-                f=function,
-                args=args,
-                kwargs=kwargs
-            )
+            job = redis_queue_default.enqueue(f=function, args=args, kwargs=kwargs)
             return job.get_id()
 
         # Task with schedule datetime.
@@ -65,7 +62,7 @@ def create_job(
             time_delta=timedelta(minutes=minutes),
             func=function,
             kwargs=kwargs,
-            retry=Retry(max=3, interval=[10, 30, 60])
+            retry=Retry(max=3, interval=[10, 30, 60]),
         )
 
         return job.get_id()
@@ -74,6 +71,7 @@ def create_job(
 ###########################################
 ##          Queue Worker Setup           ##
 ###########################################
+
 
 def __run_worker__() -> None:
     """

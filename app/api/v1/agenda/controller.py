@@ -20,8 +20,7 @@ class AgendaControllerModel:
     def __init__(self):
         self.model = AgendaModel
 
-    async def create_day(
-            self, day: DayIn, user: dict) -> DayOut:
+    async def create_day(self, day: DayIn, user: dict) -> DayOut:
         """
         Create a new day in agenda.
         """
@@ -45,9 +44,8 @@ class AgendaControllerModel:
         return DayOut(**new_day.dict())
 
     async def create_conference(
-            self, day_id: str,
-            conference: ConferenceIn,
-            user: dict) -> ConferenceOut:
+        self, day_id: str, conference: ConferenceIn, user: dict
+    ) -> ConferenceOut:
         """
         Add a new conference to one day.
         """
@@ -84,8 +82,7 @@ class AgendaControllerModel:
 
         for i in range(len(day["conferences"])):
             speaker_info = await self.model.find_from_foregyn_key(
-                "speakers",
-                [day["conferences"][i]["speaker"]]
+                "speakers", [day["conferences"][i]["speaker"]]
             )
             day["conferences"][i]["speakerInfo"] = speaker_info[0]
 
@@ -116,21 +113,16 @@ class AgendaControllerModel:
             return False
 
         _conferences = day["conferences"]
-        _conference = [
-            conf for conf in _conferences if conf["uuid"] == conference_id
-        ]
+        _conference = [conf for conf in _conferences if conf["uuid"] == conference_id]
         conference = _conference[0]
 
         speaker_info = await self.model.find_from_foregyn_key(
-            "speakers",
-            [conference["speaker"]]
+            "speakers", [conference["speaker"]]
         )
         conference["speakerInfo"] = speaker_info[0]
         return conference
 
-    async def update_day(
-            self, day_id: str,
-            new_day_data: DayIn, user: dict) -> int:
+    async def update_day(self, day_id: str, new_day_data: DayIn, user: dict) -> int:
         """
         Update a existing day
         """
@@ -154,9 +146,8 @@ class AgendaControllerModel:
         return updated
 
     async def update_conference(
-            self, conference_id: str,
-            conference_data: ConferenceIn,
-            user: dict) -> int:
+        self, conference_id: str, conference_data: ConferenceIn, user: dict
+    ) -> int:
         """
         Update a existing conference.
         """

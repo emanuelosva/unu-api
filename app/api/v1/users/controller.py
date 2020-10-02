@@ -39,11 +39,7 @@ class UserControllerModel:
             return False
 
         token = create_access_token({"email": user.email})
-        return UserOnAuth(
-            user=new_user.dict(),
-            accessToken=token,
-            tokenType="Bearer"
-        )
+        return UserOnAuth(user=new_user.dict(), accessToken=token, tokenType="Bearer")
 
     async def read(self, user_id: str, email: str = None) -> UserOut:
         """
@@ -68,8 +64,7 @@ class UserControllerModel:
             foregyn_keys=user["myEvents"],
         )
         user["myCollaborations"] = await self.model.find_from_foregyn_key(
-            collection="events",
-            foregyn_keys=user["myCollaborations"]
+            collection="events", foregyn_keys=user["myCollaborations"]
         )
 
         return UserOut(**user)
@@ -86,8 +81,7 @@ class UserControllerModel:
 
         if user.email != new_data["email"]:
             used_email = await self.model.find(
-                {"email": new_data["email"]},
-                only_one=False
+                {"email": new_data["email"]}, only_one=False
             )
             if used_email:
                 return 409
@@ -98,7 +92,8 @@ class UserControllerModel:
         return updated
 
     async def update_to_field(
-            self, user_id: str, field: str, uuid: str, action: str) -> UserOut:
+        self, user_id: str, field: str, uuid: str, action: str
+    ) -> UserOut:
         """
         Update a existing user
         """
@@ -138,11 +133,7 @@ class UserControllerModel:
         user = await self.read(user_authenticated["uuid"])
         token = create_access_token({"email": user.email})
 
-        return UserOnAuth(
-            user=user.dict(),
-            accessToken=token,
-            tokenType="Bearer"
-        )
+        return UserOnAuth(user=user.dict(), accessToken=token, tokenType="Bearer")
 
 
 UserController = UserControllerModel()

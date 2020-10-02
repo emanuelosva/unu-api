@@ -37,17 +37,14 @@ class AssociatedControllerModel:
 
         return AssociatedOut(**associated_data)
 
-    async def read(
-            self, associated_id: str,
-            event_id: str = None) -> AssociatedOut:
+    async def read(self, associated_id: str, event_id: str = None) -> AssociatedOut:
         """
         Retrieve a existing associated or all associateds belongs
         to one event.
         """
         if event_id is not None:
             associateds_list = await self.model.find(
-                query={"event": event_id},
-                only_one=False
+                query={"event": event_id}, only_one=False
             )
             return associateds_list
 
@@ -59,8 +56,8 @@ class AssociatedControllerModel:
         return AssociatedOut(**associated)
 
     async def update(
-            self, associated_id: str,
-            associated_data: AssociatedIn, user: dict) -> int:
+        self, associated_id: str, associated_data: AssociatedIn, user: dict
+    ) -> int:
         """
         Update a existing event.
         """
@@ -92,8 +89,7 @@ class AssociatedControllerModel:
         if not check_authorization_on_event(user, associated.event):
             return 403, None
 
-        deleted_count = await self.model.delete(
-            {"uuid": associated_id})
+        deleted_count = await self.model.delete({"uuid": associated_id})
         return deleted_count, associated
 
 

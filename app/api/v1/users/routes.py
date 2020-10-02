@@ -22,14 +22,16 @@ router = APIRouter()
 ##          Register a new user          ##
 ###########################################
 
+
 @router.post(
     "/signup",
     status_code=201,
     response_model=UserOnAuth,
     responses={
         "409": {"model": exceptions.Conflict},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def register_a_new_user(body: UserIn, background_task: BackgroundTasks):
     """
     Register a new user and return the access token.
@@ -38,11 +40,7 @@ async def register_a_new_user(body: UserIn, background_task: BackgroundTasks):
     if not register_response:
         exceptions.conflict_409("The email already exists")
 
-    background_task.add_task(
-        send_welcome_email,
-        username=body.name,
-        email=body.email
-    )
+    background_task.add_task(send_welcome_email, username=body.name, email=body.email)
 
     return register_response
 
@@ -56,11 +54,15 @@ async def register_a_new_user(body: UserIn, background_task: BackgroundTasks):
         "403": {"model": exceptions.Forbidden},
         "409": {"model": exceptions.Conflict},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def add_user_as_collaborator(
-        body: UserCollaborator, background_task: BackgroundTasks,
-        event_id: str, existing: bool = False,
-        user=Depends(get_current_user)):
+    body: UserCollaborator,
+    background_task: BackgroundTasks,
+    event_id: str,
+    existing: bool = False,
+    user=Depends(get_current_user),
+):
     """
     Add a new user as collaboration.
     """
@@ -105,11 +107,7 @@ async def add_user_as_collaborator(
     background_task.add_task(requests.patch, url=url, json=json)
 
     # Send welcome email to the new user
-    background_task.add_task(
-        send_welcome_email,
-        username=body.name,
-        email=body.email
-    )
+    background_task.add_task(send_welcome_email, username=body.name, email=body.email)
 
     return {"detail": "Created and added entitie", "uuid": user_uuid}
 
@@ -118,20 +116,21 @@ async def add_user_as_collaborator(
 ##              Login a User             ##
 ###########################################
 
-@ router.post(
+
+@router.post(
     "/login",
     status_code=200,
     response_model=UserOnAuth,
     responses={
         "401": {"model": exceptions.Unauthorized},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def login_for_acces_token(body: UserLogin):
     """
     Login a user
     """
-    user_authenticated = await UserController.authenticate(
-        body.email, body.password)
+    user_authenticated = await UserController.authenticate(body.email, body.password)
     if not user_authenticated:
         exceptions.unauthorized_401("Invalid credentials")
 
@@ -142,15 +141,17 @@ async def login_for_acces_token(body: UserLogin):
 ##          Retrieve a loged User        ##
 ###########################################
 
-@ router.get(
+
+@router.get(
     "",
     status_code=200,
     response_model=UserOut,
     responses={
         "401": {"model": exceptions.Unauthorized},
         "404": {"model": exceptions.NotFound},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def get_a_logged_user(user: dict = Depends(get_current_user)):
     """
     Retrieve the info of the logen current user.
@@ -165,6 +166,7 @@ async def get_a_logged_user(user: dict = Depends(get_current_user)):
 ##          Update a existing User       ##
 ###########################################
 
+
 @router.put(
     "/{user_id}",
     status_code=200,
@@ -174,10 +176,12 @@ async def get_a_logged_user(user: dict = Depends(get_current_user)):
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "409": {"model": exceptions.Conflict},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def update_a_existing_user(
-        user_id: str, body: UserIn, user=Depends(get_current_user)):
+    user_id: str, body: UserIn, user=Depends(get_current_user)
+):
     """
     Update a existing user
     """
@@ -195,19 +199,20 @@ async def update_a_existing_user(
 ##      Update a Association in User     ##
 ###########################################
 
+
 @router.patch(
     "/{user_id}",
     status_code=200,
     response_model=UserOut,
-    responses={"404": {"model": exceptions.NotFound}})
+    responses={"404": {"model": exceptions.NotFound}},
+)
 async def update_association_in_user(
-        user_id: str, action: str,
-        field: str = Body(...), uuid: str = Body(...)):
+    user_id: str, action: str, field: str = Body(...), uuid: str = Body(...)
+):
     """
     Update a associated field in user
     """
-    user_updated = await UserController.update_to_field(
-        user_id, field, uuid, action)
+    user_updated = await UserController.update_to_field(user_id, field, uuid, action)
 
     if not user_updated:
         exceptions.not_fount_404("User not found")
@@ -218,7 +223,8 @@ async def update_association_in_user(
 ##          Delete a existing User       ##
 ###########################################
 
-@ router.delete(
+
+@router.delete(
     "/{user_id}",
     status_code=200,
     response_model=responses.Deleted,
@@ -226,8 +232,9 @@ async def update_association_in_user(
         "401": {"model": exceptions.Unauthorized},
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def delete_a_existing_user(user_id: str, user=Depends(get_current_user)):
     """
     Delete a existing user

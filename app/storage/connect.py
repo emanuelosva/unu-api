@@ -13,6 +13,7 @@ from config import settings
 ##           Bucket Connection           ##
 ###########################################
 
+
 def get_storage_bucket():
     """
     Return a GCP bucket-storage client.

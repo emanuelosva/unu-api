@@ -10,6 +10,7 @@ class AssociatedIn(BaseModel):
     """
     Body for create associateds.
     """
+
     name: str
     web: str
     logo: Optional[str] = ""
@@ -20,4 +21,5 @@ class AssociatedOut(AssociatedIn):
     """
     Associated out response schema.
     """
+
     uuid: str

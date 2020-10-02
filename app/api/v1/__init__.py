@@ -23,9 +23,7 @@ from api.v1.mails.routes import router as mails_router
 v1_router = APIRouter()
 
 # --- User router --- #
-v1_router.include_router(
-    users_router, prefix="/users", tags=["Users"]
-)
+v1_router.include_router(users_router, prefix="/users", tags=["Users"])
 
 # --- Organizations router --- #
 v1_router.include_router(
@@ -33,9 +31,7 @@ v1_router.include_router(
 )
 
 # --- Events router --- #
-v1_router.include_router(
-    events_router, prefix="/events", tags=["Events"]
-)
+v1_router.include_router(events_router, prefix="/events", tags=["Events"])
 
 # --- Associateds router --- #
 v1_router.include_router(
@@ -43,19 +39,13 @@ v1_router.include_router(
 )
 
 # --- Speakers router --- #
-v1_router.include_router(
-    speakers_router, prefix="/speakers", tags=["Speakers"]
-)
+v1_router.include_router(speakers_router, prefix="/speakers", tags=["Speakers"])
 
 # --- Agenda router --- #
-v1_router.include_router(
-    agenda_router, prefix="/agenda", tags=["Agenda"]
-)
+v1_router.include_router(agenda_router, prefix="/agenda", tags=["Agenda"])
 
 # --- Mails router --- #
-v1_router.include_router(
-    mails_router, prefix="/mails", tags=["Mails"]
-)
+v1_router.include_router(mails_router, prefix="/mails", tags=["Mails"])
 
 # --- Participants router --- #
 v1_router.include_router(

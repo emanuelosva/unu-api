@@ -52,10 +52,12 @@ users_crud = CRUD(USER_COLLECTION_NAME)
 ##              Token Schemas            ##
 ###########################################
 
+
 class Token(BaseModel):
     """
     Token base schema
     """
+
     accessToken: str = Field(description="The encoded jwt")
     tokenType: str = Field(description="The token type: 'Bearer'")
 
@@ -64,12 +66,14 @@ class TokenData(BaseModel):
     """
     Token request schema
     """
+
     email: Optional[str] = None
 
 
 ###########################################
 ##          Helper Auth Functions        ##
 ###########################################
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
@@ -126,8 +130,7 @@ async def authenticate_user(email: str, password: str) -> dict:
     return user
 
 
-def create_access_token(
-        data: dict, expires_delta: timedelta = None) -> bytes:
+def create_access_token(data: dict, expires_delta: timedelta = None) -> bytes:
     """
     Return a encoded jwt.
 
@@ -158,6 +161,7 @@ def create_access_token(
 ###########################################
 ##        Authentication Middleware      ##
 ###########################################
+
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     """
@@ -194,8 +198,7 @@ def check_permission(entitie: dict, uuid: str) -> None:
     """
     if entitie["uuid"] != uuid:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Operation forbidden"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Operation forbidden"
         )
 
 

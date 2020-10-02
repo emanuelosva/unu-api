@@ -24,6 +24,7 @@ router = APIRouter()
 ##        Create a new Associated        ##
 ###########################################
 
+
 @router.post(
     "",
     status_code=201,
@@ -31,12 +32,12 @@ router = APIRouter()
     responses={
         "401": {"model": exceptions.Unauthorized},
         "403": {"model": exceptions.Forbidden},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def create_a_new_associated(
-        body: AssociatedIn,
-        backgroud_task: BackgroundTasks,
-        user=Depends(get_current_user)):
+    body: AssociatedIn, backgroud_task: BackgroundTasks, user=Depends(get_current_user)
+):
     """
     Create a new associated and reference it to one event.
     """
@@ -61,21 +62,18 @@ async def create_a_new_associated(
 ##          Retrieve Associateds         ##
 ###########################################
 
+
 @router.get(
     "",
     status_code=200,
     response_model=List[AssociatedOut],
-    responses={
-        "500": {"model": exceptions.ServerError}
-    })
+    responses={"500": {"model": exceptions.ServerError}},
+)
 async def get_all_associated_in_event(event_id: str):
     """
     Return all associateds in one event
     """
-    associateds = await AssociatedController.read(
-        associated_id="",
-        event_id=event_id
-    )
+    associateds = await AssociatedController.read(associated_id="", event_id=event_id)
     return associateds
 
 
@@ -85,8 +83,9 @@ async def get_all_associated_in_event(event_id: str):
     response_model=AssociatedOut,
     responses={
         "404": {"model": exceptions.NotFound},
-        "500": {"model": exceptions.ServerError}
-    })
+        "500": {"model": exceptions.ServerError},
+    },
+)
 async def get_associated(associated_id: str, _=Depends(get_current_user)):
     """
     Retrieve a existing associated.
@@ -101,6 +100,7 @@ async def get_associated(associated_id: str, _=Depends(get_current_user)):
 ##        Update a existing Event        ##
 ###########################################
 
+
 @router.put(
     "/{associated_id}",
     status_code=200,
@@ -111,10 +111,11 @@ async def get_associated(associated_id: str, _=Depends(get_current_user)):
         "404": {"model": exceptions.NotFound},
         "409": {"model": exceptions.Conflict},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def update_a_associated(
-        associated_id: str, body: AssociatedIn,
-        user=Depends(get_current_user)):
+    associated_id: str, body: AssociatedIn, user=Depends(get_current_user)
+):
     """
     Update a existing associated.
     """
@@ -132,6 +133,7 @@ async def update_a_associated(
 ##             Delete a Event            ##
 ###########################################
 
+
 @router.delete(
     "/{associated_id}",
     status_code=200,
@@ -141,10 +143,11 @@ async def update_a_associated(
         "403": {"model": exceptions.Forbidden},
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def delete_a_existing_associated(
-        associated_id: str, backgroud_task: BackgroundTasks,
-        user=Depends(get_current_user)):
+    associated_id: str, backgroud_task: BackgroundTasks, user=Depends(get_current_user)
+):
     """
     Delete a existing event and its associations with user and organization.
     """

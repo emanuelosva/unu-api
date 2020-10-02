@@ -21,8 +21,7 @@ class EventControllerModel:
     def __init__(self):
         self.model = EventsModel
 
-    async def create(
-            self, event: EventsIn, user: str) -> EventOut:
+    async def create(self, event: EventsIn, user: str) -> EventOut:
         """
         Create a new event.
         """
@@ -30,8 +29,7 @@ class EventControllerModel:
         new_event_data.update({"uuid": str(uuid4())})
         new_event_data.update({"user": user})
 
-        organization_name = event.organizationUrl.replace(
-            "-", " ").capitalize()
+        organization_name = event.organizationUrl.replace("-", " ").capitalize()
         new_event_data.update({"organizationName": organization_name})
 
         new_event = Event(**new_event_data)
@@ -70,10 +68,7 @@ class EventControllerModel:
         """
         Retrieve a list of published events.
         """
-        events = await self.model.find(
-            {"publicationStatus": True},
-            only_one=False
-        )
+        events = await self.model.find({"publicationStatus": True}, only_one=False)
         return events
 
     async def get_from_url(self, organization_url: str, url: str) -> Event:
@@ -83,7 +78,7 @@ class EventControllerModel:
         query = {
             "organizationUrl": organization_url,
             "url": url,
-            "publicationStatus": True
+            "publicationStatus": True,
         }
         event = await self.model.find(query)
 
@@ -102,9 +97,7 @@ class EventControllerModel:
 
         return event
 
-    async def update(
-            self, event_id: str,
-            new_event_data: EventUpdate) -> int:
+    async def update(self, event_id: str, new_event_data: EventUpdate) -> int:
         """
         Update a existing event.
         """
@@ -125,8 +118,8 @@ class EventControllerModel:
         return updated, event.uuid
 
     async def update_to_field(
-            self, event_id: str,
-            field: str, uuid: str, action: str) -> EventOut:
+        self, event_id: str, field: str, uuid: str, action: str
+    ) -> EventOut:
         """
         Update a existing event.
         """
@@ -164,8 +157,7 @@ class EventControllerModel:
         if not authorized:
             return 403, None
 
-        deleted_count = await self.model.delete(
-            {"uuid": event_id})
+        deleted_count = await self.model.delete({"uuid": event_id})
         return deleted_count, event
 
 

@@ -22,12 +22,8 @@ class MailControllerModel:
         self._send_alert = send_close_event_email
 
     async def send_special(
-            self,
-            event_id: str,
-            subject: str,
-            message: str,
-            file: UploadFile,
-            user: dict) -> int:
+        self, event_id: str, subject: str, message: str, file: UploadFile, user: dict
+    ) -> int:
         """
         Send a special email to all participants
         registere in the passed event
@@ -51,7 +47,7 @@ class MailControllerModel:
             subjet=subject,
             to_list=mails,
             event_url=event["event_url"],
-            image=file
+            image=file,
         )
 
     async def send_alert(self, event_id: str) -> int:
@@ -70,9 +66,7 @@ class MailControllerModel:
         event = await self._get_event_data(event_id)
 
         self._send_alert(
-            event_name=event["name"],
-            event_url=event["event_url"],
-            to_list=emails
+            event_name=event["name"], event_url=event["event_url"], to_list=emails
         )
 
     async def _get_event_data(self, event_id: str) -> dict:

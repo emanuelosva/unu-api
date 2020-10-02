@@ -21,6 +21,7 @@ router = APIRouter()
 ##          Send a special email         ##
 ###########################################
 
+
 @router.post(
     "/special",
     status_code=200,
@@ -29,22 +30,22 @@ router = APIRouter()
         "401": {"model": exceptions.Unauthorized},
         "403": {"model": exceptions.Forbidden},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def send_special_email(
-        event_id: str = Form(...),
-        subject: str = Form(...),
-        message: str = Form(...),
-        file: Optional[UploadFile] = Form(None),
-        user: dict = Depends(get_current_user)):
+    event_id: str = Form(...),
+    subject: str = Form(...),
+    message: str = Form(...),
+    file: Optional[UploadFile] = Form(None),
+    user: dict = Depends(get_current_user),
+):
     """
     Send a special email to all registered participants of a specific event.
     """
     if not file:
         file = None
 
-    sended = await MailController.send_special(
-        event_id, subject, message, file, user
-    )
+    sended = await MailController.send_special(event_id, subject, message, file, user)
 
     if sended == 403:
         exceptions.forbidden_403("Operation forbidden")
@@ -58,6 +59,7 @@ async def send_special_email(
 ##           Send a alert Email          ##
 ###########################################
 
+
 @router.post(
     "/alert",
     status_code=200,
@@ -65,7 +67,8 @@ async def send_special_email(
     responses={
         "404": {"model": exceptions.NotFound},
         "500": {"model": exceptions.ServerError},
-    })
+    },
+)
 async def send_alert_email(event_id: str):
     """
     Send a email of alert when there is one day left to the event.

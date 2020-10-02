@@ -20,8 +20,7 @@ class OrganizationControllerModel:
     def __init__(self):
         self.model = OrganizationModel
 
-    async def create(
-            self, organization: OrganizationIn, user: str) -> OrganizationOut:
+    async def create(self, organization: OrganizationIn, user: str) -> OrganizationOut:
         """
         Create a new organization.
         """
@@ -58,20 +57,16 @@ class OrganizationControllerModel:
             return False
         return OrganizationOut(**organization)
 
-    async def read_many(
-            self, query_field: str, value: any) -> List[OrganizationOut]:
+    async def read_many(self, query_field: str, value: any) -> List[OrganizationOut]:
         """
         Retrieve a list of organizations
         """
-        organizations = await self.model.find(
-            {f"{query_field}": value}, only_one=False)
+        organizations = await self.model.find({f"{query_field}": value}, only_one=False)
         if not organizations:
             return []
         return organizations
 
-    async def update(
-            self, organization_id: str,
-            new_org_data: OrganizationIn) -> int:
+    async def update(self, organization_id: str, new_org_data: OrganizationIn) -> int:
         """
         Update a existing organization
         """
@@ -93,8 +88,8 @@ class OrganizationControllerModel:
         return updated, organization.uuid
 
     async def update_to_field(
-            self, organization_unu_url: str,
-            field: str, uuid: str, action: str) -> OrganizationOut:
+        self, organization_unu_url: str, field: str, uuid: str, action: str
+    ) -> OrganizationOut:
         """
         Update a existing user
         """
@@ -117,8 +112,7 @@ class OrganizationControllerModel:
         if not organization.uuid in user["organizations"]:
             return 403, None
 
-        deleted_count = await self.model.delete(
-            {"uuid": organization_id})
+        deleted_count = await self.model.delete({"uuid": organization_id})
         return deleted_count, organization.user
 
 

@@ -34,6 +34,7 @@ db = client[settings.DB_NAME]
 ##         Collection Instance           ##
 ###########################################
 
+
 def get_collection(collection_name: str):
     """
     Return a mongo db collection instance.
@@ -56,6 +57,7 @@ def get_collection(collection_name: str):
 ###########################################
 ##             Parser Functions          ##
 ###########################################
+
 
 def jsonify(data: BSON) -> dict:
     """

@@ -22,6 +22,7 @@ class Settings(BaseSettings):
         """
         Get env variables from dotenv file.
         """
+
         env_file = ".env"
 
     ###########################################
@@ -68,8 +69,7 @@ class Settings(BaseSettings):
 
     GOOGLE_STORAGE_BUCKET: str = os.getenv("GOOGLE_STORAGE_BUCKET")
     ALLOWED_EXTENSIONS: List[str] = ["png", "jpg", "jpeg"]
-    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv(
-        "GOOGLE_APPLICATION_CREDENTIALS")
+    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
 
 settings = Settings()

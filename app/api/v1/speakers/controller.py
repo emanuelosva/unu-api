@@ -21,8 +21,7 @@ class SpeakerControllerModel:
     def __init__(self):
         self.model = SpeakerModel
 
-    async def create(
-            self, speaker: SpeakerIn, user: dict) -> SpeakerOut:
+    async def create(self, speaker: SpeakerIn, user: dict) -> SpeakerOut:
         """
         Create a new speaker.
         """
@@ -71,8 +70,8 @@ class SpeakerControllerModel:
         return speakers
 
     async def update(
-            self, speaker_id: str,
-            new_speaker_data: SpeakerIn, user: dict) -> int:
+        self, speaker_id: str, new_speaker_data: SpeakerIn, user: dict
+    ) -> int:
         """
         Update a existing speaker
         """

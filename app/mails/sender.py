@@ -10,9 +10,18 @@ from typing import List
 # external imports
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (
-    Mail, From, To, Subject, SendAt,
-    Content, MimeType, Attachment, FileContent,
-    FileName, FileType, Disposition
+    Mail,
+    From,
+    To,
+    Subject,
+    SendAt,
+    Content,
+    MimeType,
+    Attachment,
+    FileContent,
+    FileName,
+    FileType,
+    Disposition,
 )
 
 # modue imports
@@ -22,6 +31,7 @@ from config import settings
 ###########################################
 ##       Email Sender Abstraction        ##
 ###########################################
+
 
 class EmailSender:
     """
@@ -33,13 +43,13 @@ class EmailSender:
         self.from_email = settings.EMAIL_SENDER
 
     def create_email(
-            self,
-            to_list: List["str"],
-            subject: str,
-            html_content: str,
-            image: bytes = None,
-            content_type: str = None,
-            send_at: datetime = None,
+        self,
+        to_list: List["str"],
+        subject: str,
+        html_content: str,
+        image: bytes = None,
+        content_type: str = None,
+        send_at: datetime = None,
     ) -> Mail:
         """
         Create a new sendgrid email object.
@@ -71,9 +81,10 @@ class EmailSender:
             timestamp = datetime.utcnow().strftime("%Y-%m-%d-%H%M%S")
             message.attachment = Attachment(
                 FileContent(image),
-                FileName(f'event_image-{timestamp}.{ext}'),
+                FileName(f"event_image-{timestamp}.{ext}"),
                 FileType(str(content_type)),
-                Disposition('attachment'))
+                Disposition("attachment"),
+            )
 
         if send_at:
             message.send_at = SendAt(self.get_unix_time(send_at), p=0)

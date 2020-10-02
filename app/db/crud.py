@@ -20,6 +20,7 @@ error_logger = ErrorLogger(get_collection=get_collection)
 ##           CRUD Operations             ##
 ###########################################
 
+
 class CRUD:
     """
     Crud operations.
@@ -46,18 +47,15 @@ class CRUD:
             await error_logger.register(ex)
         return str(created.inserted_id)
 
-    async def update(
-            self, query: dict, document_data: dict, many: bool = False) -> int:
+    async def update(self, query: dict, document_data: dict, many: bool = False) -> int:
         """
         Update an existing document.
         """
         try:
             if many:
-                updated = await self._db.update_many(
-                    query, {"$set": document_data})
+                updated = await self._db.update_many(query, {"$set": document_data})
             else:
-                updated = await self._db.update_one(
-                    query, {"$set": document_data})
+                updated = await self._db.update_one(query, {"$set": document_data})
         except Exception as ex:
             await error_logger.register(ex)
         return int(updated.modified_count)
@@ -77,7 +75,7 @@ class CRUD:
         """
         Insert a new document in nested element.
         """
-        operation = {"$push":  {f"{path}": data}}
+        operation = {"$push": {f"{path}": data}}
         try:
             updated = await self._db.update_one(query, operation)
         except Exception as ex:
@@ -85,8 +83,8 @@ class CRUD:
         return int(updated.modified_count)
 
     async def pull_array(
-            self, query: dict, array_name: str,
-            condition: dict, many: bool = False) -> int:
+        self, query: dict, array_name: str, condition: dict, many: bool = False
+    ) -> int:
         """
         Remove a item from a list that matches the condition.
         """
@@ -114,10 +112,11 @@ class CRUD:
         return int(deleted.deleted_count)
 
     async def find(
-            self, query: dict,
-            only_one: bool = True,
-            filters: List[str] = None,
-            excludes: List[str] = None,
+        self,
+        query: dict,
+        only_one: bool = True,
+        filters: List[str] = None,
+        excludes: List[str] = None,
     ) -> dict:
         """
         Retrieve the data that matches with the query and the filters.
@@ -145,7 +144,8 @@ class CRUD:
         return items
 
     async def find_from_foregyn_key(
-            self, collection: str, foregyn_keys: List[str]) -> List[dict]:
+        self, collection: str, foregyn_keys: List[str]
+    ) -> List[dict]:
         """
         Find a documents associates with the passed foregyn key.
         """
@@ -158,7 +158,8 @@ class CRUD:
         return associated_docs
 
     def _generate_query_filter(
-            self, filter_list: list = None, excludes: bool = False) -> dict:
+        self, filter_list: list = None, excludes: bool = False
+    ) -> dict:
         """
         Generate a dict with the correct mongo query filter
         """

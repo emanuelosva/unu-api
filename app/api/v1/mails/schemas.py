@@ -9,5 +9,6 @@ class MailResponse(BaseModel):
     """
     Response mail schema
     """
+
     detail: str = Field(example="Email sended")
     target: str = Field(example="Event/Email: str")
