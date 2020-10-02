@@ -1,0 +1,58 @@
+version: "3"
+services:
+  # API service
+  api:
+    container_name: api
+    image: unu_api
+    ports:
+      - 8000:80
+    env_file: ./app/.env
+    volumes:
+      - ./app:/app
+    build:
+      context: .
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-true}
+    depends_on:
+      - redis
+      - db
+    restart: on-failure
+    command: "/start-reload.sh"
+  # DB service
+  db:
+    container_name: unu_db
+    image: postgres:12
+    volumes:
+      - app-db-data:/var/lib/postgresql/pgdata
+    env_file: ./app/.env
+    environment:
+      - PGDATA=/var/lib/postgresql/pgdata
+  # Worker service
+  worker:
+    container_name: worker
+    image: unu_api
+    command: python3 worker/main.py
+    volumes:
+      - ./app:/app
+    depends_on:
+      - redis
+  # Redis service
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    restart: always
+  # dashboard:
+  #   build: ./app/worker
+  #   image: dashboard
+  #   container_name: dashboard
+  #   ports:
+  #     - 9181:9181
+  #   command: rq-dashboard -H redis
+  #   depends_on:
+  #     - redis
+  #     - worker
+
+volumes:
+  app-db-data:

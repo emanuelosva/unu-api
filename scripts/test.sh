@@ -1,1 +1,3 @@
-docker-compose -f test.yaml up
+#!bin/sh -c
+
+docker-compose -f docker-compose.test.yml up

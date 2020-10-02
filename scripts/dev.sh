@@ -1,1 +1,3 @@
-docker-compose -f dev.yaml up
+#!bin/sh -c
+
+docker-compose -f docker-compose.dev.yml up
