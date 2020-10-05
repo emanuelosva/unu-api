@@ -2,13 +2,11 @@
 API V1 - Router
 """
 
-# external imports
 from fastapi import APIRouter
 
-# module imports
 from api.v1.users.routes import router as users_router
+from api.v1.organizations.routes import router as organization_router
 
-# from api.v1.organizations.routes import router as organization_router
 # from api.v1.events.routes import router as events_router
 # from api.v1.associateds.routes import router as associateds_router
 # from api.v1.speakers.routes import router as speakers_router
@@ -17,9 +15,9 @@ from api.v1.users.routes import router as users_router
 # from api.v1.mails.routes import router as mails_router
 
 
-###########################################
-##             Version 1 Router          ##
-###########################################
+#################
+# API V1 ROUTER #
+#################
 
 v1_router = APIRouter()
 
@@ -27,9 +25,9 @@ v1_router = APIRouter()
 v1_router.include_router(users_router, prefix="/users", tags=["Users"])
 
 # --- Organizations router --- #
-# v1_router.include_router(
-#     organization_router, prefix="/organizations", tags=["Organizations"]
-# )
+v1_router.include_router(
+    organization_router, prefix="/organizations", tags=["Organizations"]
+)
 
 # # --- Events router --- #
 # v1_router.include_router(events_router, prefix="/events", tags=["Events"])

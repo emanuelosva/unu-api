@@ -2,203 +2,164 @@
 Organization - Routes.
 """
 
-# built-in imports
 from typing import List
 
-# external imports
-import requests
-from fastapi import APIRouter, Body, BackgroundTasks, Depends
+from fastapi import APIRouter, Depends
 
-# module
-from auth.service import get_current_user
-from config import settings
-from utils import exceptions, responses
-from .schemas import OrganizationIn, OrganizationOut
-from .controller import OrganizatioController
+from auth.service import get_auth_user
+from db import CRUD, IntegrityError
+from utils import responses, exceptions
+from .schemas import Organization, OrganizationIn
+from .models import OrganizationsModel
 
 
+########################
+# ORGANIZATIONS ROUTER #
+########################
 router = APIRouter()
 
 
-###########################################
-##       Create a new organization       ##
-###########################################
+#######################################
+# DATA ACCESS FOR ORGANIZATIONS TABLE #
+#######################################
+organizations_crud = CRUD(OrganizationsModel, Organization)
 
 
+#########################
+# CREATE A ORGANIZATION #
+#########################
 @router.post(
     "",
     status_code=201,
-    response_model=OrganizationOut,
     responses={
-        "401": {"model": exceptions.Unauthorized},
-        "409": {"model": exceptions.Conflict},
-        "500": {"model": exceptions.ServerError},
+        "201": {"model": Organization},
+        "401": {"model": responses.Unauthorized},
+        "409": {"model": responses.Conflict},
+        "500": {"model": responses.ServerError},
     },
 )
 async def create_a_new_organization(
-    body: OrganizationIn,
-    backgroud_task: BackgroundTasks,
-    user=Depends(get_current_user),
-):
+    organization_info: OrganizationIn,
+    user=Depends(get_auth_user),
+) -> Organization:
     """
     Create a new organization and the reference to the user owner.
     """
-    user_uuid = user["uuid"]
-    organization = await OrganizatioController.create(body, user_uuid)
-
-    if organization == 409:
+    try:
+        organization_data = organization_info.dict()
+        unu_url = organization_data["name"].replace(" ", "-").lower()
+        organization_data.update({"unu_url": unu_url})
+        organization_data.update({"owner": user})
+        organization = await organizations_crud.create(organization_data)
+    except IntegrityError:
         exceptions.conflict_409("The name already exists")
-    if not organization:
-        exceptions.server_error_500("Server error")
-
-    # Backgroud task: add the organization ref to user.organizations
-    url = f"{settings.API_URL}/api/v1/users/{user_uuid}?action=add"
-    body = {"field": "organizations", "uuid": organization.uuid}
-    backgroud_task.add_task(requests.patch, url=url, json=body)
 
     return organization
 
 
-###########################################
-##          Retrieve a organization      ##
-###########################################
-
-
+##############################
+# RETRIEVE ALL ORGANIZATIONS #
+##############################
 @router.get(
-    "/",
+    "",
     status_code=200,
-    response_model=List[OrganizationOut],
     responses={
-        "401": {"model": exceptions.Unauthorized},
-        "404": {"model": exceptions.NotFound},
+        "200": {"model": Organization},
+        "401": {"model": responses.Unauthorized},
+        "500": {"model": responses.ServerError},
     },
 )
-async def get_organizations_list(
-    query_field: str, value: str, _=Depends(get_current_user)
-):
+async def get_organizations_list(user=Depends(get_auth_user)) -> List[Organization]:
     """
-    Retrieve the info of roganizations that matches the query.
+    Retrieve all organizations of the current users.
     """
-    organizations = await OrganizatioController.read_many(query_field, value)
+    organizations = await organizations_crud.read({"owner": user.id})
     return organizations
 
 
+###########################
+# RETRIEVE A ORGANIZATION #
+###########################
 @router.get(
     "/{organization_id}",
     status_code=200,
-    response_model=OrganizationOut,
     responses={
-        "401": {"model": exceptions.Unauthorized},
-        "403": {"model": exceptions.Forbidden},
-        "404": {"model": exceptions.NotFound},
+        "200": {"model": Organization},
+        "401": {"model": responses.Unauthorized},
+        "403": {"model": responses.Forbidden},
+        "500": {"model": responses.ServerError},
     },
 )
-async def get_a_organization(organization_id: str, user=Depends(get_current_user)):
+async def get_organization(
+    organization_id: str, user=Depends(get_auth_user)
+) -> Organization:
     """
-    Retrieve the info of the existing organization.
+    Retrieve the organization with specific ID.
     """
-    organization = await OrganizatioController.read(organization_id)
+    organization = await organizations_crud.read_one({"id": organization_id})
     if not organization:
         exceptions.not_fount_404("Organization not found")
-
-    if not organization.uuid in user["organizations"]:
-        exceptions.forbidden_403("Operation Forbidden")
-
+    if organization.owner.id != user.id:
+        exceptions.forbidden_403("Forbidden")
     return organization
 
 
-###########################################
-##     Update a existing Organization    ##
-###########################################
-
-
+#######################
+# UPDATE ORGANIZATION #
+#######################
 @router.put(
     "/{organization_id}",
     status_code=200,
-    response_model=responses.Updated,
     responses={
-        "401": {"model": exceptions.Unauthorized},
-        "403": {"model": exceptions.Forbidden},
-        "404": {"model": exceptions.NotFound},
+        "200": {"model": Organization},
+        "401": {"model": responses.Unauthorized},
+        "403": {"model": responses.Forbidden},
+        "404": {"model": responses.NotFound},
     },
 )
 async def update_a_existing_organization(
-    organization_id: str, body: OrganizationIn, user=Depends(get_current_user)
-):
+    organization_id: str,
+    organization_info: OrganizationIn,
+    user=Depends(get_auth_user),
+) -> Organization:
     """
     Update a organization info.
     """
-    updated, uuid = await OrganizatioController.update(organization_id, body)
-
-    if updated == 404:
-        exceptions.not_fount_404("Organization not found")
-
-    if not uuid in user["organizations"]:
-        exceptions.forbidden_403("Operation Forbidden")
-
-    return {"detail": "Modified success", "modifiedCount": updated}
-
-
-###########################################
-##      Update a Association in User     ##
-###########################################
-
-
-@router.patch(
-    "/{organization_unu_url}",
-    status_code=200,
-    response_model=responses.Updated,
-    responses={"404": {"model": exceptions.NotFound}},
-)
-async def update_association_in_organization(
-    organization_unu_url: str,
-    action: str,
-    field: str = Body(...),
-    uuid: str = Body(...),
-):
-    """
-    Update a nested field in organizations
-    """
-    updated = await OrganizatioController.update_to_field(
-        organization_unu_url, field, uuid, action
+    organization: Organization = await organizations_crud.read_one(
+        {"id": organization_id}
     )
-    if not updated:
-        exceptions.not_fount_404("Organization not found")
+    if organization.owner.id != user.id:
+        exceptions.forbidden_403("Forbidden")
 
-    return {"detail": "Modified success", "modifiedCount": updated}
-
-
-###########################################
-##          Delete a Organization        ##
-###########################################
+    organization = await organizations_crud.update(
+        organization_id, organization_info.dict()
+    )
+    return organization
 
 
+#######################
+# DELETE ORGANIZATION #
+#######################
 @router.delete(
-    "/{organizaion_id}",
+    "/{organization_id}",
     status_code=200,
-    response_model=responses.Deleted,
     responses={
-        "401": {"model": exceptions.Unauthorized},
-        "403": {"model": exceptions.Forbidden},
-        "404": {"model": exceptions.NotFound},
+        "200": {"model": Organization},
+        "401": {"model": responses.Unauthorized},
+        "403": {"model": responses.Forbidden},
+        "404": {"model": responses.NotFound},
     },
 )
 async def delete_a_existing_organization(
-    organizaion_id: str, backgroud_task: BackgroundTasks, user=Depends(get_current_user)
+    organization_id: str, user=Depends(get_auth_user)
 ):
     """
-    Delete a existing organization and the associated with the user
+    Delete a existing organization and return the info of it.
     """
-    deleted, user_id = await OrganizatioController.delete(organizaion_id, user)
-
-    if deleted == 403:
-        exceptions.forbidden_403("Operation forbidden")
-    if deleted == 404:
-        exceptions.not_fount_404("Organization not found")
-
-    # Backgroud task: remove the organization ref to user.organizations
-    url = f"{settings.API_URL}/api/v1/users/{user_id}?action=remove"
-    body = {"field": "organizations", "uuid": organizaion_id}
-    backgroud_task.add_task(requests.patch, url=url, json=body)
-
-    return {"detail": f"Deleted count: {deleted}"}
+    organization: Organization = await organizations_crud.read_one(
+        {"id": organization_id}
+    )
+    if organization.owner.id != user.id:
+        exceptions.forbidden_403("Forbidden")
+    organization = await organizations_crud.delete(organization_id)
+    return organization

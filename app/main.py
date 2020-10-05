@@ -10,7 +10,6 @@ from db.db_config import TORTOISE_ORM_CONFIG
 from api import api_router
 from config import settings
 
-
 ################
 # App Settings #
 ################
@@ -28,10 +27,9 @@ app = FastAPI(
 
 register_tortoise(app, config=TORTOISE_ORM_CONFIG, generate_schemas=True)
 
-
 ###############
 # Middlewares #
-###########################################
+###############
 
 if len(settings.CORS_ORIGIN) != 0:
     app.add_middleware(

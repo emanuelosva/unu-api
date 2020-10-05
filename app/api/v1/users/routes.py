@@ -16,11 +16,19 @@ from auth import (
     hash_password,
 )
 
-from .schemas import User, UserIn, UserLogin
+from .schemas import User, UserLogin, UserCreate, UserUpdate
 from .models import UsersModel
 
 
+################
+# USERS ROUTER #
+################
 router = APIRouter()
+
+
+###############################
+# DATA ACCESS FOR USERS TABLE #
+###############################
 users_crud = CRUD(UsersModel, User)
 
 
@@ -37,7 +45,7 @@ users_crud = CRUD(UsersModel, User)
     },
 )
 async def register_a_new_user(
-    user_info: UserIn, response: Response, background_task: BackgroundTasks
+    user_info: UserCreate, response: Response, background_task: BackgroundTasks
 ) -> User:
     """
     Register a new user and set the session cookie.
@@ -168,7 +176,7 @@ async def get_current_user(user: User = Depends(get_auth_user)) -> User:
     """
     Retrieve the info of the logen current user.
     """
-    return user
+    return await User.from_tortoise_orm(user)
 
 
 ###############
@@ -185,7 +193,7 @@ async def get_current_user(user: User = Depends(get_auth_user)) -> User:
     },
 )
 async def update_a_existing_user(
-    user_id: str, user_info: UserIn, current_user=Depends(get_auth_user)
+    user_id: str, user_info: UserUpdate, current_user=Depends(get_auth_user)
 ) -> User:
     """
     Update a existing user if the session is valid.
@@ -217,7 +225,7 @@ async def delete_a_existing_user(user_id: str, user=Depends(get_current_user)) -
     """
     Delete a existing user
     """
-    if current_user.id != user_id:
+    if str(current_user.id) != user_id:
         exceptions.forbidden_403("Forbidden")
 
     user = await users_crud.delete(user_id)

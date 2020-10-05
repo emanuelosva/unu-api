@@ -222,3 +222,6 @@ $RECYCLE.BIN/
 
 # gcp
 app/storage/key.json
+
+# TORTOISE
+**/migrations/**

@@ -134,7 +134,7 @@ async def get_auth_user(token: str = Depends(auth_scheme)) -> any:
     - user: UserOut - The user data.
     """
     email = get_from_token(token)
-    user = await users_db.read_one({"email": email})
+    user = await users_db.read_one({"email": email}, return_db_model=True)
     if not user:
         raise exceptions.unauthorized_401()
     return user

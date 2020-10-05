@@ -2,16 +2,14 @@
 Main API - Router
 """
 
-# external imports
 from fastapi import APIRouter
 
-# module imports
 from api.v1 import v1_router
 
 
-###########################################
-##               API - ROUTER            ##
-###########################################
+################
+# API - ROUTER #
+################
 
 api_router = APIRouter()
 

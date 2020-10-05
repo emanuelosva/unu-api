@@ -2,35 +2,25 @@
 Organizations - Schemas
 """
 
-from typing import List, Optional
-from pydantic import BaseModel, Field  # pylint: disable-msg=E0611
+from pydantic import BaseModel, Field
+from tortoise import Tortoise
+from tortoise.contrib.pydantic import pydantic_model_creator
+
+from config import settings
+from .models import OrganizationsModel
+
+# Init models to get all related properties
+Tortoise.init_models(settings.DB_MODELS, "models")
+
+
+Organization = pydantic_model_creator(OrganizationsModel)
 
 
 class OrganizationIn(BaseModel):
     """
-    Body for create organization.
+    Pydantic schema for create a Organization.
     """
 
-    name: str
-    oficialUrl: Optional[str] = ""
-    logo: Optional[str] = ""
-
-
-class Organization(OrganizationIn):
-    """
-    Organization schema.
-    """
-
-    uuid: str
-    unuUrl: str
-    events: Optional[List[str]] = []
-    user: str = Field(..., description="The uuid of user owner - Foregyn key")
-
-
-class OrganizationOut(Organization):
-    """
-    Organization schema.
-    """
-
-    unuUrl: str
-    events: List[str]
+    name: str = Field(..., example="Marvel")
+    url: str = Field(..., example="https://marvel.com")
+    logo: str = Field(...)

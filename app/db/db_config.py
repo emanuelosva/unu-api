@@ -4,6 +4,9 @@ DB Config.
 
 from config import settings
 
+#####################################
+# TORTOISE CONFIG FOR MANAGE MODELS #
+#####################################
 
 TORTOISE_ORM_CONFIG = {
     "connections": {
@@ -11,10 +14,7 @@ TORTOISE_ORM_CONFIG = {
     },
     "apps": {
         "models": {
-            "models": [
-                "api.v1.users.models"
-            ],
-            "default_connection": "default",
+            "models": settings.DB_MODELS,
         },
     },
 }

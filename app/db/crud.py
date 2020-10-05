@@ -3,6 +3,7 @@ Db - CRUD class.
 """
 
 from typing import List
+from tortoise.contrib.pydantic import pydantic_queryset_creator
 
 
 ###################
@@ -24,6 +25,7 @@ class CRUD:
         """
         self.model = model
         self.schema = schema
+        self.schema_list = pydantic_queryset_creator(model)
 
     async def create(self, data: dict) -> any:
         """
@@ -34,24 +36,27 @@ class CRUD:
         - data: dict - The specific instance data
         """
         entitie = await self.model.create(**data)
-        return self.schema.from_orm(entitie)
+        return await self.schema.from_tortoise_orm(entitie)
 
-    async def read_one(self, query: dict) -> any:
+    async def read_one(self, query: dict, return_db_model: bool = False) -> any:
         """
         Get info.
         """
         entitie = await self.model.filter(**query).first()
-        return self.schema.from_orm(entitie)
+        if not entitie:
+            return False
+        if return_db_model:
+            return entitie
+        return await self.schema.from_tortoise_orm(entitie)
 
-    async def read(self, query: any) -> List[any]:
+    async def read(self, query: any, get_related: bool = False) -> List[any]:
         """
         Get info.
         """
-        entities = await self.model.filter(query)
-        entities_to_schema = []
-        for ent in entities:
-            entities_to_schema.append(self.schema.from_orm(ent))
-        return entities_to_schema
+        entities = self.model.filter(**query)
+        if get_related:
+            return await self.schema_list.from_queryset(entities)
+        return await entities
 
     async def update(self, id: str, data: dict) -> any:
         """
@@ -60,7 +65,7 @@ class CRUD:
         entitie = await self.model.get(id=id)
         entitie.update_from_dict(data)
         await entitie.save()
-        return self.schema.from_orm(entitie)
+        return await self.schema.from_tortoise_orm(entitie)
 
     async def delete(self, id: str) -> any:
         """
@@ -69,4 +74,4 @@ class CRUD:
         entite = await self.model.get(id=id)
         entite_to_delete = entite
         await entite.delete()
-        return self.schema.from_orm(entite_to_delete)
+        return await self.schema.from_tortoise_orm(entite_to_delete)
