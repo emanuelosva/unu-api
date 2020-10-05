@@ -2,69 +2,38 @@
 Users - Schemas
 """
 
-# external imports
 from typing import List, Optional
-from pydantic import BaseModel  # pylint: disable-msg=E0611
+from pydantic import BaseModel, Field
+from tortoise.contrib.pydantic import pydantic_model_creator
 
-# module imports
-from api.v1.organizations.schemas import OrganizationOut
+from .models import UsersModel
+
+
+User = pydantic_model_creator(UsersModel, exclude=("password"))
+User.Config.schema_extra = {
+    "example": {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "created_at": "2020-10-05T02:23:56.393Z",
+        "updated_at": "2020-10-05T02:23:56.394Z",
+        "email": "stan_lee@marvel.com",
+        "name": "Stan Lee",
+    }
+}
 
 
 class UserLogin(BaseModel):
     """
-    Body for login.
+    Pydantic schema for login request.
     """
 
-    email: str
-    password: str
+    email: str = Field(..., example="stan_lee@marvel.com")
+    password: str = Field(..., example="marvelous")
 
 
 class UserIn(UserLogin):
     """
-    Body for create a user
+    Pydantic schema for create a user.
     """
 
-    name: str
-
-
-class UserCollaborator(UserIn):
-    """
-    Body for add a collaborator
-    """
-
-    name: Optional[str]
-    password: Optional[str]
-
-
-class User(UserIn):
-    """
-    Json Response for user
-    """
-
-    uuid: str
-    organizations: Optional[List[str]] = []
-    myEvents: Optional[List[str]] = []
-    myCollaborations: Optional[List[str]] = []
-
-
-class UserOut(BaseModel):
-    """
-    Json Response for user
-    """
-
-    uuid: str
-    email: str
-    name: str
-    organizations: List[OrganizationOut]
-    myEvents: List[dict]
-    myCollaborations: List[dict]
-
-
-class UserOnAuth(BaseModel):
-    """
-    Json Response for user on auth routes
-    """
-
-    accessToken: str
-    tokenType: str
-    user: UserOut
+    name: str = Field(..., example="Stan Lee")
+    email: str = Field(..., example="stan_lee@marvel.com")

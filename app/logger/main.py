@@ -2,31 +2,27 @@
 Error Logger Module
 """
 
-# build-in imports
 import traceback
 from datetime import datetime
 
-# external imports
 from fastapi import HTTPException
 
-# module imports
 from mails.sender import EmailSender
 from config import settings
 
 
-###########################################
-##          Error Logger Class           ##
-###########################################
+######################
+# Error Logger Class #
+######################
 
 
 class ErrorLogger:
     """
-    Error logger implementation
+    Error logger implementation.
     """
 
-    def __init__(self, get_collection):
+    def __init__(self):
         self.sender = EmailSender()
-        self.collection = get_collection("errors")
 
     async def register(self, _exception):
         """

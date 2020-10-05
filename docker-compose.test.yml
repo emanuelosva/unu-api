@@ -1,7 +1,7 @@
 version: "3"
 services:
   api:
-    container_name: api
+    container_name: unu_api
     build: .
     image: unu_api
     ports:

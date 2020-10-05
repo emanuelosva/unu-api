@@ -2,30 +2,82 @@
 General - Responses.
 """
 
-from pydantic import BaseModel, Field  # pylint: disable-msg=E0611
+from pydantic import BaseModel, Field
 
 
-class Created(BaseModel):
+##################
+# Mixin Response #
+##################
+
+
+class EmailMsg(BaseModel):
+    """Email message schema"""
+
+    detail: str = Field(example="Email sent")
+
+
+class Msg(BaseModel):
+    """Any detail operation mssage schema"""
+
+    detail: str = Field(example="Opertion successfully")
+
+
+###################
+# Error Responses #
+###################
+
+
+class BadRequest(BaseModel):
     """
-    Created response.
+    Bad Request model exception.
     """
 
-    detail: str = Field(example="Created entitie")
-    uuid: str = Field(example="d7fea47a-4fe3-4067-b7e8-53dbb724a634")
+    detail: str = Field(example="Invalid request data")
 
 
-class Updated(BaseModel):
+class Unauthorized(BaseModel):
     """
-    Updated response.
-    """
-
-    detail: str = Field(example="Modified success")
-    modifiedCount: int = Field(example=1)
-
-
-class Deleted(BaseModel):
-    """
-    Deleted response.
+    Unauthorized model exception.
     """
 
-    detail: str = Field(example="Deleted count: int")
+    detail: str = Field(example="Invalid Credential")
+
+
+class Forbidden(BaseModel):
+    """
+    Forbidden model exception.
+    """
+
+    detail: str = Field(example="Action Forbidden")
+
+
+class NotFound(BaseModel):
+    """
+    Not Found model exception.
+    """
+
+    detail: str = Field(example="Resource not found")
+
+
+class Conflict(BaseModel):
+    """
+    Conflict model exception.
+    """
+
+    detail: str = Field(example="Entitie name already exists")
+
+
+class FailPrecondition(BaseModel):
+    """
+    Fail Precondition model exception.
+    """
+
+    detail: str = Field(example="Fail precondition")
+
+
+class ServerError(BaseModel):
+    """
+    Server error model exception.
+    """
+
+    detail: str = Field(example="Server Error")

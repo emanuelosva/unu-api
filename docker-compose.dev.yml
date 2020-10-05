@@ -1,6 +1,5 @@
 version: "3"
 services:
-  # API service
   api:
     container_name: api
     image: unu_api
@@ -18,16 +17,18 @@ services:
       - db
     restart: on-failure
     command: "/start-reload.sh"
-  # DB service
+
   db:
     container_name: unu_db
-    image: postgres:12
+    image: postgres:13
     volumes:
-      - app-db-data:/var/lib/postgresql/pgdata
-    env_file: ./app/.env
+      - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - ./app/.env
     environment:
-      - PGDATA=/var/lib/postgresql/pgdata
-  # Worker service
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    restart: always
+
   worker:
     container_name: worker
     image: unu_api
@@ -36,13 +37,14 @@ services:
       - ./app:/app
     depends_on:
       - redis
-  # Redis service
+
   redis:
     container_name: redis
     image: redis:alpine
     ports:
       - 6379:6379
     restart: always
+
   # dashboard:
   #   build: ./app/worker
   #   image: dashboard

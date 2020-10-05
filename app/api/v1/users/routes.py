@@ -2,246 +2,218 @@
 Users - Routes.
 """
 
-# external imports
-import requests
-from fastapi import APIRouter, Body, Depends, BackgroundTasks
+from fastapi import APIRouter, Response, Body, Depends, BackgroundTasks
 
-# module imports
 from config import settings
-from auth.service import get_current_user, check_permission
-from utils import exceptions, responses
-from mails.service import send_welcome_email
-from .schemas import UserIn, UserOut, UserOnAuth, UserLogin, UserCollaborator
-from .controller import UserController
+from db import CRUD, IntegrityError
+from mails import send_welcome_email, send_recovery_password_email
+from utils import responses, exceptions
+from auth import (
+    get_auth_user,
+    create_access_token,
+    verify_password,
+    get_from_token,
+    hash_password,
+)
+
+from .schemas import User, UserIn, UserLogin
+from .models import UsersModel
 
 
 router = APIRouter()
+users_crud = CRUD(UsersModel, User)
 
 
-###########################################
-##          Register a new user          ##
-###########################################
-
-
+##########
+# SIGNUP #
+##########
 @router.post(
     "/signup",
     status_code=201,
-    response_model=UserOnAuth,
     responses={
-        "409": {"model": exceptions.Conflict},
-        "500": {"model": exceptions.ServerError},
+        "201": {"model": User},
+        "409": {"model": responses.Conflict},
+        "500": {"model": responses.ServerError},
     },
 )
-async def register_a_new_user(body: UserIn, background_task: BackgroundTasks):
+async def register_a_new_user(
+    user_info: UserIn, response: Response, background_task: BackgroundTasks
+) -> User:
     """
-    Register a new user and return the access token.
+    Register a new user and set the session cookie.
     """
-    register_response = await UserController.create(user=body)
-    if not register_response:
-        exceptions.conflict_409("The email already exists")
+    try:
+        user = await users_crud.create(user_info.dict())
+    except IntegrityError:
+        exceptions.conflict_409("Email already exists")
 
-    background_task.add_task(send_welcome_email, username=body.name, email=body.email)
+    response.set_cookie(
+        key=settings.COOKIE_SESSION_NAME,
+        value=create_access_token(user.email),
+        max_age=settings.COOKIE_SESSION_AGE,
+        # If debug mode, not secure.
+        secure=not settings.DEBUG_MODE,
+        httponly=not settings.DEBUG_MODE,
+    )
 
-    return register_response
-
-
-@router.post(
-    "/add_collaborator",
-    status_code=201,
-    response_model=responses.Created,
-    responses={
-        "401": {"model": exceptions.Unauthorized},
-        "403": {"model": exceptions.Forbidden},
-        "409": {"model": exceptions.Conflict},
-        "500": {"model": exceptions.ServerError},
-    },
-)
-async def add_user_as_collaborator(
-    body: UserCollaborator,
-    background_task: BackgroundTasks,
-    event_id: str,
-    existing: bool = False,
-    user=Depends(get_current_user),
-):
-    """
-    Add a new user as collaboration.
-    """
-    if not event_id in user["myEvents"]:
-        exceptions.forbidden_403("Operation forbidden")
-
-    # Add as collaborator a existing user
-
-    if existing:
-        user = await UserController.read(email=body.email, user_id="")
-        if not user:
-            exceptions.not_fount_404("User not found")
-
-        # Add the collaborator to the event
-        user_uuid = user["uuid"]
-        url = f"{settings.API_URL}/api/v1/events/{event_id}?action=add"
-        json = {"field": "collaborators", "uuid": user_uuid}
-        background_task.add_task(requests.patch, url=url, json=json)
-
-        # Add the event to the user in his collaboration
-        url = f"{settings.API_URL}/api/v1/users/{user_uuid}?action=add"
-        json = {"field": "myCollaborations", "uuid": event_id}
-        background_task.add_task(requests.patch, url=url, json=json)
-
-        return {"detail": "User added as collaborator", "uuid": user_uuid}
-
-    # Register a new user and add as collaborator
-
-    register_response = await UserController.create(user=body)
-    if not register_response:
-        exceptions.conflict_409("The email already exists")
-
-    # Add the collaborator to the event
-    user_uuid = register_response.user.uuid
-    url = f"{settings.API_URL}/api/v1/events/{event_id}?action=add"
-    json = {"field": "collaborators", "uuid": user_uuid}
-    background_task.add_task(requests.patch, url=url, json=json)
-
-    # Add the event to the user in his collaboration
-    url = f"{settings.API_URL}/api/v1/users/{user_uuid}?action=add"
-    json = {"field": "myCollaborations", "uuid": event_id}
-    background_task.add_task(requests.patch, url=url, json=json)
-
-    # Send welcome email to the new user
-    background_task.add_task(send_welcome_email, username=body.name, email=body.email)
-
-    return {"detail": "Created and added entitie", "uuid": user_uuid}
-
-
-###########################################
-##              Login a User             ##
-###########################################
-
-
-@router.post(
-    "/login",
-    status_code=200,
-    response_model=UserOnAuth,
-    responses={
-        "401": {"model": exceptions.Unauthorized},
-        "500": {"model": exceptions.ServerError},
-    },
-)
-async def login_for_acces_token(body: UserLogin):
-    """
-    Login a user
-    """
-    user_authenticated = await UserController.authenticate(body.email, body.password)
-    if not user_authenticated:
-        exceptions.unauthorized_401("Invalid credentials")
-
-    return user_authenticated
-
-
-###########################################
-##          Retrieve a loged User        ##
-###########################################
-
-
-@router.get(
-    "",
-    status_code=200,
-    response_model=UserOut,
-    responses={
-        "401": {"model": exceptions.Unauthorized},
-        "404": {"model": exceptions.NotFound},
-        "500": {"model": exceptions.ServerError},
-    },
-)
-async def get_a_logged_user(user: dict = Depends(get_current_user)):
-    """
-    Retrieve the info of the logen current user.
-    """
-    user: UserOut = await UserController.read(user["uuid"])
-    if not user:
-        exceptions.not_fount_404("User not found")
+    background_task.add_task(send_welcome_email, username=user.name, email=user.email)
     return user
 
 
-###########################################
-##          Update a existing User       ##
-###########################################
+#########
+# LOGIN #
+#########
+@router.post(
+    "/login",
+    status_code=200,
+    responses={
+        "200": {"model": User},
+        "401": {"model": responses.Unauthorized},
+        "500": {"model": responses.ServerError},
+    },
+)
+async def login_and_set_cookie_session(
+    creadentials: UserLogin, response: Response
+) -> User:
+    """
+    Verify the user credentials and set the cookie session.
+    """
+    user = users_crud.read_one({"email": creadentials.email})
+
+    if not user or not verify_password(creadentials.password, user.password):
+        exceptions.unauthorized_401("Invalid credentials")
+
+    response.set_cookie(
+        key=settings.COOKIE_SESSION_NAME,
+        value=create_access_token(user.email),
+        max_age=settings.COOKIE_SESSION_AGE,
+        # If debug mode, not secure.
+        secure=not settings.DEBUG_MODE,
+        httponly=not settings.DEBUG_MODE,
+    )
+    return user
 
 
+#####################
+# RECOVERY PASSWORD #
+#####################
+@router.post(
+    "/recovery-password/{email}",
+    status_code=200,
+    responses={
+        "200": {"model": responses.EmailMsg},
+        "404": {"model": responses.NotFound},
+        "500": {"model": responses.ServerError},
+    },
+)
+async def send_recovery_password_email(email: str) -> responses.EmailMsg:
+    """
+    Check if the email is valid and then
+    send a email for create a new password.
+    """
+    user = await users_crud.read_one({"email": email})
+    if not user:
+        exceptions.not_fount_404("Email not found")
+
+    token = create_access_token(email, for_recovery_password=True)
+    send_welcome_email(email=email, token=token)
+    return responses.EmailMsg()
+
+
+##################
+# RESET PASSWORD #
+##################
+@router.post(
+    "/reset-password",
+    status_code=200,
+    responses={
+        "200": {"model": responses.Msg},
+        "400": {"model": responses.BadRequest},
+        "401": {"model": responses.Unauthorized},
+        "500": {"model": responses.ServerError},
+    },
+)
+async def reset_password(
+    token: str = Body(...), new_password: str = Body(...)
+) -> responses.Msg:
+    """
+    Verify the token and reset password if all correct.
+    """
+    email = get_from_token(token)
+    user = await users_crud.read_one({"email": email})
+
+    if not user:
+        exceptions.bad_request_400("Invalid token")
+
+    hashed_password = hash_password(new_password)
+    await users_crud.update(user.id, {"password": hashed_password})
+    return responses.Msg()
+
+
+################
+# CURRENT USER #
+################
+@router.get(
+    "/current",
+    status_code=200,
+    responses={
+        "200": {"model": User},
+        "401": {"model": responses.Unauthorized},
+        "500": {"model": responses.ServerError},
+    },
+)
+async def get_current_user(user: User = Depends(get_auth_user)) -> User:
+    """
+    Retrieve the info of the logen current user.
+    """
+    return user
+
+
+###############
+# UPDATE USER #
+###############
 @router.put(
     "/{user_id}",
     status_code=200,
-    response_model=responses.Updated,
     responses={
-        "401": {"model": exceptions.Unauthorized},
-        "403": {"model": exceptions.Forbidden},
-        "404": {"model": exceptions.NotFound},
-        "409": {"model": exceptions.Conflict},
-        "500": {"model": exceptions.ServerError},
+        "200": {"model": User},
+        "401": {"model": responses.Unauthorized},
+        "403": {"model": responses.Forbidden},
+        "500": {"model": responses.ServerError},
     },
 )
 async def update_a_existing_user(
-    user_id: str, body: UserIn, user=Depends(get_current_user)
-):
+    user_id: str, user_info: UserIn, current_user=Depends(get_auth_user)
+) -> User:
     """
-    Update a existing user
+    Update a existing user if the session is valid.
     """
-    check_permission(user, user_id)
+    if current_user.id != user_id:
+        exceptions.forbidden_403("Forbidden")
 
-    updated_count = await UserController.update(user_id, body)
-    if updated_count == 404:
-        exceptions.not_fount_404("User not found")
-    if updated_count == 409:
-        exceptions.conflict_409("The email already exists")
-    return {"detail": "Modified success", "modifiedCount": updated_count}
+    user = await users_crud.update(user_id, user_info.dict())
+    return user
 
 
-###########################################
-##      Update a Association in User     ##
-###########################################
-
-
-@router.patch(
-    "/{user_id}",
-    status_code=200,
-    response_model=UserOut,
-    responses={"404": {"model": exceptions.NotFound}},
-)
-async def update_association_in_user(
-    user_id: str, action: str, field: str = Body(...), uuid: str = Body(...)
-):
-    """
-    Update a associated field in user
-    """
-    user_updated = await UserController.update_to_field(user_id, field, uuid, action)
-
-    if not user_updated:
-        exceptions.not_fount_404("User not found")
-    return user_updated
-
-
-###########################################
-##          Delete a existing User       ##
-###########################################
-
-
+###############
+# DELETE USER #
+###############
 @router.delete(
     "/{user_id}",
     status_code=200,
-    response_model=responses.Deleted,
     responses={
-        "401": {"model": exceptions.Unauthorized},
-        "403": {"model": exceptions.Forbidden},
-        "404": {"model": exceptions.NotFound},
-        "500": {"model": exceptions.ServerError},
+        "200": {"model": User},
+        "401": {"model": responses.Unauthorized},
+        "403": {"model": responses.Forbidden},
+        "500": {"model": responses.ServerError},
     },
 )
-async def delete_a_existing_user(user_id: str, user=Depends(get_current_user)):
+async def delete_a_existing_user(user_id: str, user=Depends(get_current_user)) -> User:
     """
     Delete a existing user
     """
-    check_permission(user, user_id)
+    if current_user.id != user_id:
+        exceptions.forbidden_403("Forbidden")
 
-    deleted = await UserController.delete(user_id)
-    if deleted == 404:
-        exceptions.not_fount_404("User not found")
-    return {"detail": f"Deleted count: {deleted}"}
+    user = await users_crud.delete(user_id)
+    return user

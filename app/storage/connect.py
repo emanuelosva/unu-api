@@ -2,16 +2,14 @@
 Google Cloud Storage - Connection.
 """
 
-# external imports
 from google.cloud import storage
 
-# module imports
 from config import settings
 
 
-###########################################
-##           Bucket Connection           ##
-###########################################
+#####################
+# Bucket Connection #
+#####################
 
 
 def get_storage_bucket():

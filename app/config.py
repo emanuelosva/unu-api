@@ -2,15 +2,30 @@
 Unu API - Application settings.
 """
 
-import os
-
 from typing import List
-from pydantic import BaseSettings
+from pydantic import BaseSettings, Field
 
-from dotenv import load_dotenv
 
-# Get env variables from dotenv files for development
-load_dotenv()
+POSTGRES_DB_URL = "postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
+
+class PostgresSettings(BaseSettings):
+    """
+    Postgres env values.
+    """
+
+    class Config:
+        """
+        Get env variables from dotenv file.
+        """
+
+        env_file = ".env"
+
+    POSTGRES_PASSWORD: str
+    POSTGRES_USER: str
+    POSTGRES_DB: str
+    POSTGRES_PORT: str
+    POSTGRES_SERVER: str
 
 
 class Settings(BaseSettings):
@@ -25,51 +40,53 @@ class Settings(BaseSettings):
 
         env_file = ".env"
 
-    ###########################################
-    ##       General Configurations          ##
-    ###########################################
+    ##########################
+    # General Configurations #
+    ##########################
 
     APP_NAME: str = "Unu - API"
     API_V1_STR: str = "/api/v1"
-    CORS_ORIGIN: List[str] = ["*"]
-    EMAIL_ADMIN: str = "debuggers.master@gmail.com"
-    API_URL: str = os.getenv("API_URL")
+    CORS_ORIGIN: List[str]
+    EMAIL_ADMIN: str
+    WEB_HOST: str
+    DEBUG_MODE: bool
 
-    ###########################################
-    ##                Security               ##
-    ###########################################
+    ############
+    # Security #
+    ############
 
-    SECRET_JWT: str = os.getenv("SECRET_JWT")
+    SECRET_JWT: str
+    COOKIE_SESSION_NAME: str = "ore_session_key"
+    COOKIE_SESSION_AGE: int = 60 * 60 * 24 * 7 * 4  # One month
 
-    ###########################################
-    ##               DataBase                ##
-    ###########################################
+    ############
+    # DataBase #
+    ############
 
-    DB_NAME: str = os.getenv("DB_NAME")
-    DB_PASSWORD: str = os.getenv("DB_PASSWORD")
-    DB_CLUSTER: str = os.getenv("DB_CLUSTER")
-    DB_USERNAME: str = os.getenv("DB_USERNAME")
+    POSTGRES = PostgresSettings()
+    DB_URL: str = POSTGRES_DB_URL.format(**POSTGRES.dict())
 
-    ###########################################
-    ##         Email Configurations          ##
-    ###########################################
-    SENDGRID_API_KEY: str = os.getenv("SENDGRID_API_KEY")
-    EMAIL_SENDER: str = "unu.events@gmail.com"
+    ########################
+    # Email Configurations #
+    ########################
 
-    ###########################################
-    ##               Task Queue              ##
-    ###########################################
+    SENDGRID_API_KEY: str
+    EMAIL_SENDER: str
 
-    REDIS_URL: str = os.getenv("REDIS_URL")
-    QUEUES: List[str] = ["email", "default"]
+    ##############
+    # Task Queue #
+    ##############
 
-    ###########################################
-    ##          External Storage             ##
-    ###########################################
+    REDIS_URL: str
+    QUEUES: List[str]
 
-    GOOGLE_STORAGE_BUCKET: str = os.getenv("GOOGLE_STORAGE_BUCKET")
-    ALLOWED_EXTENSIONS: List[str] = ["png", "jpg", "jpeg"]
-    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    ################
+    # File Storage #
+    ################
+
+    GOOGLE_STORAGE_BUCKET: str
+    ALLOWED_EXTENSIONS: List[str]
+    GOOGLE_APPLICATION_CREDENTIALS: str
 
 
 settings = Settings()

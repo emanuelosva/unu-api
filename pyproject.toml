@@ -23,6 +23,7 @@ dnspython = "^2.0.0"
 google-cloud-storage = "^1.31.2"
 tortoise-orm = "^0.16.16"
 asyncpg = "^0.21.0"
+aerich = "^0.2.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.0"

@@ -2,24 +2,21 @@
 Google Cloud Storage- Upload Functions.
 """
 
-# built-in imports
 import os
 import base64
 from uuid import uuid4
 from datetime import datetime
 
-# external imports
 import six
 from fastapi import status, HTTPException, UploadFile
 
-# module imports
 from config import settings
 from .connect import get_storage_bucket
 
 
-###########################################
-##           Auxiliar Functions          ##
-###########################################
+######################
+# Auxiliar Functions #
+######################
 
 
 def _check_extension(filename: str) -> None:
@@ -58,9 +55,9 @@ def _unique_filename(filename: str) -> str:
     return "{0}-{1}-{2}.{3}".format(basename, date, str(uuid4()), extension)
 
 
-###########################################
-##           Storage Functions           ##
-###########################################
+#####################
+# Storage Functions #
+#####################
 
 
 def upload_file(file_base64: str = "", file: UploadFile = None) -> str:
@@ -111,3 +108,24 @@ def upload_file(file_base64: str = "", file: UploadFile = None) -> str:
     if isinstance(url, six.binary_type):
         url = url.decode("utf-8")
     return url
+
+
+def get_or_update_logo(encoded_image_or_url: str) -> str:
+    """
+    If the passed string is a encoded image, upload the file, and
+    return the url, else return the url string.
+
+    Params:
+    ------
+    - encoded_image_or_url: str - The encoded image or a image url
+
+    Return:
+    ------
+    - url: str - The url to image.
+    """
+    if encoded_image_or_url.startswith("https://"):
+        # The image is a url yet.
+        return encoded_image_or_url
+
+    # First the file is upload, then the generated url is returned.
+    return upload_file(file_base64=encoded_image_or_url)

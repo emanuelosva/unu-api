@@ -2,27 +2,26 @@
 Functions to manage the SendGrid Sender.
 """
 
-# build-in imports
 import base64
 from typing import List
 from datetime import datetime
 
-# module impoerts
+from config import settings
 from mails.templates.welcome import welcome_template
 from mails.templates.event_close import event_close_template
 from mails.templates.special_message import special_message_template
 from .sender import EmailSender
 
-###########################################
-##       Email Sender Abstraction        ##
-###########################################
+############################
+# Email Sender Abstraction #
+############################
 
 sender = EmailSender()
 
 
-###########################################
-##             Email Functions           ##
-###########################################
+###################
+# Email Functions #
+###################
 
 
 def send_welcome_email(username: str, email: str) -> None:
@@ -31,8 +30,8 @@ def send_welcome_email(username: str, email: str) -> None:
 
     Params:
     ------
-    username: str - The username of the new user
-    email: str - The target email
+    - username: str - The username of the new user
+    - email: str - The target email
     """
     content = welcome_template(name=username)
     email = sender.create_email(
@@ -58,14 +57,14 @@ def send_special_email(
 
     Params:
     ------
-    event_name: str - The event name.
-    message: str - The message to participants.
-    subject: str - The email sibject.
-    to_list: List[str] - The participants emails.
-    event_url: str - The url of the currect event.
-    image: bytes - Optional image.
-    content_type: str - The content type of the optional image.
-    send_at: datetime - Optional date to send the mail.
+    - event_name: str - The event name.
+    - message: str - The message to participants.
+    - subject: str - The email sibject.
+    - to_list: List[str] - The participants emails.
+    - event_url: str - The url of the currect event.
+    - image: bytes - Optional image.
+    - content_type: str - The content type of the optional image.
+    - send_at: datetime - Optional date to send the mail.
     """
     if image:
         image = base64.b64encode(image).decode()
@@ -86,15 +85,15 @@ def send_close_event_email(
     event_name: str,
     event_url: str,
     to_list: List[str],
-) -> str:
+) -> None:
     """
     Send a schedule email to notify that a event is tomorrow.
 
     Params:
     ------
-    event_name: str - The event name.
-    event_url: str - The public event url.
-    to_list: List[str] - The participants emails.
+    - event_name: str - The event name.
+    - event_url: str - The public event url.
+    - to_list: List[str] - The participants emails.
     """
     # Create mail
     content = event_close_template(event_name, event_url)
@@ -104,4 +103,26 @@ def send_close_event_email(
         html_content=content,
     )
 
+    sender.send_email(email)
+
+
+def send_recovery_password_email(email: str, token: str) -> None:
+    """
+    Send a email with a link with the token to reset the password.
+
+    Params:
+    ------
+    - email: str - The user email
+    - token: str - The encoded JWT for recovery password
+    """
+    link = f"{settings.WEB_HOST}/recovery-password?token={token}"
+    content = f"""
+    <h1>Reset your password</h1>
+    <p>-----</p>
+    <a href="{link}" target="_blank" rel="noopener noreferrer">Click here</a>
+    """
+
+    email = sender.create_email(
+        to_list=[email], subject="UnuEvents- recovery password", html_content=content
+    )
     sender.send_email(email)

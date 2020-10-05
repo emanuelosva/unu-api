@@ -1,21 +1,18 @@
 """
-Redis Queue Module - For manage background proccess.
+Redis Queue Module - For manage background process.
 """
 
-# Built-in imports
 from datetime import datetime, timedelta
 
-# external imports
 import redis
 from rq import Queue, Connection, Retry, Worker
 
-# module imports
 from config import settings
 
 
-###########################################
-##         Job Queue (schedule)          ##
-###########################################
+#############
+# Job Queue #
+#############
 
 
 def create_job(
@@ -27,20 +24,19 @@ def create_job(
     **kwargs,
 ) -> str:
     """
-    Add a new Job to Queue.
+    Add a new Job to Equeue.
 
     Params:
     ------
-    function: callable - The job function
-    date_time: datetime - The specific time when the job must be executed
-    utc_hours: int - Eg: -5 or +2 The specific GTM.
-    queue_name: str - The name of the task queue.
+    - function: callable - The job function
+    - date_time: datetime - The specific time when the job must be executed
+    - utc_hours: int - Eg: -5 or +2 The specific GTM.
+    - queue_name: str - The name of the task queue.
 
     Return:
     ------
-    job_id: str - The specifc job id
+    - job_id: str - The specifc job id
     """
-
     with Connection(redis.from_url(settings.REDIS_URL)):
 
         # Task to be schedule inmediatly.
@@ -68,16 +64,16 @@ def create_job(
         return job.get_id()
 
 
-###########################################
-##          Queue Worker Setup           ##
-###########################################
+######################
+# Queue Worker Setup #
+######################
 
 
 def __run_worker__() -> None:
     """
     Start a worker to manage the enqueue jobs.
     """
-    redis_url = "redis://redis:6379/0"
+    redis_url = settings.REDIS_URL
     redis_connection = redis.from_url(redis_url)
     with Connection(redis_connection):
         worker = Worker(settings.QUEUES, name="unu-worker")

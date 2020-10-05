@@ -2,7 +2,7 @@ version: "3"
 services:
   # API serices
   api:
-    container_name: api
+    container_name: unu_api
     image: unu_api
     ports:
       - 8000:80

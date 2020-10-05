@@ -2,12 +2,10 @@
 Emails sender class - Sendgrid implementation.
 """
 
-# build-in imports
 import time
 from datetime import datetime
 from typing import List
 
-# external imports
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import (
     Mail,
@@ -24,13 +22,12 @@ from sendgrid.helpers.mail import (
     Disposition,
 )
 
-# modue imports
 from config import settings
 
 
-###########################################
-##       Email Sender Abstraction        ##
-###########################################
+############################
+# Email Sender Abstraction #
+############################
 
 
 class EmailSender:
