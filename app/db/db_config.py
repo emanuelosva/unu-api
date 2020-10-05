@@ -12,8 +12,7 @@ TORTOISE_ORM_CONFIG = {
     "apps": {
         "models": {
             "models": [
-                "api.v1.users.models.models",
-                "aerich.models",
+                "api.v1.users.models"
             ],
             "default_connection": "default",
         },

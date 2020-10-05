@@ -43,13 +43,15 @@ async def register_a_new_user(
     Register a new user and set the session cookie.
     """
     try:
+        user_info.password = hash_password(user_info.password)
         user = await users_crud.create(user_info.dict())
     except IntegrityError:
         exceptions.conflict_409("Email already exists")
 
+    token = create_access_token(user.email)
     response.set_cookie(
         key=settings.COOKIE_SESSION_NAME,
-        value=create_access_token(user.email),
+        value=token,
         max_age=settings.COOKIE_SESSION_AGE,
         # If debug mode, not secure.
         secure=not settings.DEBUG_MODE,
@@ -78,7 +80,7 @@ async def login_and_set_cookie_session(
     """
     Verify the user credentials and set the cookie session.
     """
-    user = users_crud.read_one({"email": creadentials.email})
+    user = await users_crud.read_one({"email": creadentials.email})
 
     if not user or not verify_password(creadentials.password, user.password):
         exceptions.unauthorized_401("Invalid credentials")
@@ -188,10 +190,13 @@ async def update_a_existing_user(
     """
     Update a existing user if the session is valid.
     """
-    if current_user.id != user_id:
+    if str(current_user.id) != user_id:
         exceptions.forbidden_403("Forbidden")
 
-    user = await users_crud.update(user_id, user_info.dict())
+    try:
+        user = await users_crud.update(user_id, user_info.dict())
+    except IntegrityError:
+        exceptions.conflict_409("Email already exists")
     return user
 
 
